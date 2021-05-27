@@ -9,23 +9,19 @@ import javax.swing.JSpinner.ListEditor;
 
 public class Hauptprogramm {
 	static Random r = new Random();
-
+	public static double[] zwischensp = new double[5];
+	public static double alpha;
+	
+	
 	public static double fitness(int s1, int s2, int s3, int s4, double alpha) {
 		double[][] daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), true);
 		int dimension = daten[0].length - 1;
-
-	/**	s1 = r.nextInt(10);
-		s2 = r.nextInt(10);
-		s3 = r.nextInt(10);
-		alpha = r.nextDouble() + 1.00;**/
 
 		int[] strukturNN = { s1, s2, s3, s4, (int) alpha };// anzahl Knoten (incl. Bias) pro Hiddenschicht
 		KNN netz = new KNN(dimension, strukturNN);
 		
 		netz.trainieren(daten);// Verlustfunktion min
-		for (int i = 0; i < strukturNN.length; i++) {
-			
-		}
+		
 		daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), false);
 
 		netz.evaluieren(daten);
@@ -92,12 +88,33 @@ public class Hauptprogramm {
 
 	public static void main(String[] args) {
 		for (int i = 0; i < 2; i++) {
-			int s1 = r.nextInt(10);
-			int s2 = r.nextInt(10);
-			int s3 = r.nextInt(10);
-			int s4 = r.nextInt(10);
-			double alpha = r.nextDouble() + 2.00;
+			int s1 = r.nextInt(10 - 1) + 1;
+			int s2 = r.nextInt(10 - 1) + 1;
+			int s3 = r.nextInt(10 - 1) + 1;
+			int s4 = r.nextInt(10 - 1) + 1;
+			alpha = r.nextDouble() * 5;
+			
+			
+			
 			fitness(s1, s2, s3, s4, alpha);
+			
+			System.out.println(s1);
+			System.out.println(s2);
+			System.out.println(s3);
+			System.out.println(s4);
+			System.out.println(alpha);
+			
+			for (int j = 0; j < zwischensp.length; j++) {
+				
+				System.out.println("zw " + zwischensp[j]);
+			}
+			
+			zwischensp[0] = s1;
+			zwischensp[1] = s2;
+			zwischensp[2] = s3;
+			zwischensp[3] = s4;
+			zwischensp[4] = alpha;
+			
 		}
 	}
 
