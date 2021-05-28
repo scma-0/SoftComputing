@@ -1,3 +1,7 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class KNN {
 	// Feedforward-Neuronales Netz variabler Anzahl an Hiddenschichten
@@ -20,7 +24,7 @@ public class KNN {
 	// Parameter für Backprobagation
 	private double alpha  = Hauptprogramm.alpha;    // Fehlerrate fuer Backprobagation
 	private int maxIter   = 1;      // Anzahl Iterationen bei Fehlerminimierung
-	private int maxEpoche = 100;// Anzahl Iterationen bei Fehlerminimierung
+	private int maxEpoche = 10000;// Anzahl Iterationen bei Fehlerminimierung
 
 
 
@@ -523,6 +527,39 @@ public class KNN {
 		System.out.println("falsch Negativ: \t" + ergebnis[9]);
 		System.out.println("richtigNegativ: \t" + ergebnis[8]);
 		System.out.println("falsch Positiv: \t" + ergebnis[7]);
+		
+		
+		
+		
+
+		try {
+			File outputFile = new File("output.txt");
+			FileWriter writer = new FileWriter(outputFile, StandardCharsets.UTF_8, true);
+			writer.write(
+					"\n" + 
+					"Anzahl Muster: \t" + ergebnis[0] +
+					"\nAnzahl Positiv: \t" + ergebnis[1] +
+					"\nAnzahl Negativ: \t" + ergebnis[2] +
+					"\nAnteil Positiv: \t" + ergebnis[3] +
+					"\nAnteil Negativ: \t" + ergebnis[4] +
+					"\nGenauigkeit  :  \t" + ergebnis[5] +
+					"\nTrefferquote:   \t" + ergebnis[10] +
+					"\nAusfallrate :   \t" + ergebnis[11] +
+					"\nrichtigPositiv: \t" + ergebnis[6] +
+					"\nfalsch Negativ: \t" + ergebnis[9] +
+					"\nrichtigNegativ: \t" + ergebnis[8] +
+					"\nfalsch Positiv: \t" + ergebnis[7] + 
+					"\n"
+					);
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		
+		
 		
 		ergebnis = zwischenspeichern;
 		

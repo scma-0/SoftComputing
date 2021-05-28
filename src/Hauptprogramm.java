@@ -1,7 +1,15 @@
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Random;
 
 import javax.swing.JSpinner.ListEditor;
+
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 	// Abspeichern der Werte
 	// Werte vergleichen - Crossover 
@@ -12,6 +20,11 @@ public class Hauptprogramm {
 	public static double[] zwischensp = new double[5];
 	public static double alpha;
 	
+	int dim;
+	double[] x; // [2,2] jedes Individum hat ein LÃ¶sungsvektor
+	double signum; // schrittweite
+	double fitness;
+	public static double lernRate; // rate mit der die schrittweise angepasst werden
 	
 	public static double fitness(int s1, int s2, int s3, int s4, double alpha) {
 		double[][] daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), true);
@@ -26,16 +39,8 @@ public class Hauptprogramm {
 
 		netz.evaluieren(daten);
 
-		// netz.evaluierenGUIII(daten);
-
 		return 0.08;
 	}
-
-	int dim;
-	double[] x; // [2,2] jedes Individum hat ein LÃ¶sungsvektor
-	double signum; // schrittweite
-	double fitness;
-	public static double lernRate; // rate mit der die schrittweise angepasst werden
 
 	public Hauptprogramm(int anzahlIndDim) {
 		this.dim = anzahlIndDim;
@@ -98,23 +103,30 @@ public class Hauptprogramm {
 			
 			fitness(s1, s2, s3, s4, alpha);
 			
-			System.out.println(s1);
-			System.out.println(s2);
-			System.out.println(s3);
-			System.out.println(s4);
-			System.out.println(alpha);
+			try {
+				File outputFile = new File("output.txt");
+				FileWriter writer = new FileWriter(outputFile, StandardCharsets.UTF_8, true);
+				writer.write(
+						"\n" + 
+						"s1: \t" + s1 +
+						"\ns2: \t" + s2 +
+						"\ns3: \t" + s3 +
+						"\nalpha: \t" + alpha + 
+						"\n\n"
+						);
+				writer.flush();
+				writer.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 			
 			for (int j = 0; j < zwischensp.length; j++) {
 				
 				System.out.println("zw " + zwischensp[j]);
 			}
-			
-			zwischensp[0] = s1;
-			zwischensp[1] = s2;
-			zwischensp[2] = s3;
-			zwischensp[3] = s4;
-			zwischensp[4] = alpha;
-			
+
 		}
 	}
 
