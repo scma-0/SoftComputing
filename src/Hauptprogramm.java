@@ -5,7 +5,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.JSpinner.ListEditor;
 
@@ -17,20 +20,20 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class Hauptprogramm {
 	static Random r = new Random();
-	public static double[] zwischensp = new double[5];
+	
 	public static double alpha;
 	
 	int dim;
 	double[] x; // [2,2] jedes Individum hat ein LÃ¶sungsvektor
 	double signum; // schrittweite
-	double fitness;
+	//double fitness;
 	public static double lernRate; // rate mit der die schrittweise angepasst werden
 	
-	public static double fitness(int s1, int s2, int s3, int s4, double alpha) {
+	public static double fitness(int s1, int s2, int s3, double alpha) {
 		double[][] daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), true);
 		int dimension = daten[0].length - 1;
 
-		int[] strukturNN = { s1, s2, s3, s4, (int) alpha };// anzahl Knoten (incl. Bias) pro Hiddenschicht
+		int[] strukturNN = { s1, s2, s3, (int) alpha };// anzahl Knoten (incl. Bias) pro Hiddenschicht
 		KNN netz = new KNN(dimension, strukturNN);
 		
 		netz.trainieren(daten);// Verlustfunktion min
@@ -92,6 +95,8 @@ public class Hauptprogramm {
 	}
 
 	public static void main(String[] args) {
+		Queue<Double> queue = new ConcurrentLinkedQueue<Double>();
+		
 		for (int i = 0; i < 2; i++) {
 			int s1 = r.nextInt(10 - 1) + 1;
 			int s2 = r.nextInt(10 - 1) + 1;
@@ -101,7 +106,7 @@ public class Hauptprogramm {
 			
 			
 			
-			fitness(s1, s2, s3, s4, alpha);
+			fitness(s1, s2, s3, alpha);
 			
 			try {
 				File outputFile = new File("output.txt");
@@ -116,15 +121,22 @@ public class Hauptprogramm {
 						);
 				writer.flush();
 				writer.close();
+				
+				queue.offer(Double.valueOf(s1));
+				queue.offer(Double.valueOf(s2));
+				queue.offer(Double.valueOf(s3));
+				queue.offer(alpha);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+			System.out.println(queue.size());
 
 			
-			for (int j = 0; j < zwischensp.length; j++) {
+			for (int j = 1; j <= queue.size()+4; j++) {
 				
-				System.out.println("zw " + zwischensp[j]);
+				// liest 4 Elemente aus der Queue
+				System.out.println(j + ": " + queue.poll());
 			}
 
 		}

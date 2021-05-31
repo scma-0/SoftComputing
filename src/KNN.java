@@ -24,7 +24,7 @@ public class KNN {
 	// Parameter für Backprobagation
 	private double alpha  = Hauptprogramm.alpha;    // Fehlerrate fuer Backprobagation
 	private int maxIter   = 1;      // Anzahl Iterationen bei Fehlerminimierung
-	private int maxEpoche = 10000;// Anzahl Iterationen bei Fehlerminimierung
+	private int maxEpoche = 100;// Anzahl Iterationen bei Fehlerminimierung
 
 
 
