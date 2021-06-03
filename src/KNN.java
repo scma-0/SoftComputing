@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class KNN {
 	// Feedforward-Neuronales Netz variabler Anzahl an Hiddenschichten
@@ -24,8 +26,11 @@ public class KNN {
 	// Parameter für Backprobagation
 	private double alpha  = Hauptprogramm.alpha;    // Fehlerrate fuer Backprobagation
 	private int maxIter   = 1;      // Anzahl Iterationen bei Fehlerminimierung
-	private int maxEpoche = 100;// Anzahl Iterationen bei Fehlerminimierung
+	private int maxEpoche = 10000;// Anzahl Iterationen bei Fehlerminimierung
 
+	
+	// Für Zwischenspeicherung der Werte 
+	static double[] FitnessQueue = new double[4];
 
 
 	public KNN(int anzahlEingabewerte, int[] anzahlKnotenProHiddenSchicht) {
@@ -114,75 +119,124 @@ public class KNN {
 			System.out.println("-Epoche: " + epoche + " " + anzFehler + " " + fehler + " minAnzFehler " + minAnzFehler + " minFehler " + minFehler +" " + goBack + " " + alpha);
 			if (epoche >= maxEpoche || anzFehler == 0)	stop = true;
 			
-//			if(anzFehler < minAnzFehler || (anzFehler == minAnzFehler && fehler < minFehler)) {//neue Bestlösung
-//				minAnzFehler = anzFehler;
-//				for(int i=0;i<n;i++){
-//					for(int j=0;j<n;j++){
-//						optAnzGewichte[i][j] = w[i][j];
-//					}
-//				}
-//		    }
+			//fuer Bankenbeispiel
+			double output;
+			int falschPositiv  = 0;
+			int falschNegativ  = 0;
+			int richtigPositiv = 0;
+			int richtigNegativ = 0;
+			int anzahlPositiv  = 0;
+			int anzahlNegativ  = 0;
 			
-//			if(fehler < minFehler && anzFehler == minAnzFehler) {//neue Bestlösung
-//				minFehler = fehler;
-//				for(int i=0;i<n;i++){
-//					for(int j=0;j<n;j++){
-//						optFehGewichte[i][j] = w[i][j];
-//					}
-//				}
-//				System.out.println("-----------------------------------------------------> neuer Minfehler " + anzFehler + " " + fehler);
-//				anzVb++;
-//		    }
+			double[] ergebnis = new double[12];
 
-/*			
+			double[] zwischenspeichern = new double[12];
 			
-//			if(epoche%intervall==0){
-			if(anzFehler > minAnzFehler && minAnzFehler <10){//TOP!!!!!!!!!!!!
-		//	if(anzFehler > minAnzFehler +1){//TOP!!!!!!!!!!!!
-
-//			if(anzFehler > minAnzFehler ) {
-				for(int i=0;i<n;i++){
-					for(int j=0;j<n;j++){
-						w[i][j] = optFehGewichte[i][j];/////
-					}
+			for (int s = 0; s < liste.length; s++) {
+				eingabeSchichtInitialisieren(liste[s]);
+				output = liste[s][liste[s].length - 1];
+				forward();
+				if (a[n - 1] < 0.5 && (int) output == 1) {
+					falschNegativ++;
+					anzahlPositiv++;
 				}
-				for (int s = 0; s < liste.length; s++) {
-					eingabeSchichtInitialisieren(liste[s]);
-					klasse = liste[s][liste[s].length - 1];
-					forward();
+				else if(a[n - 1] >= 0.5 && (int) output == 1) {
+					richtigPositiv++;
+					anzahlPositiv++;
+				} 
+				else if(a[n - 1] >= 0.5 && (int) output == 0) {
+					falschPositiv++;
+					anzahlNegativ++;
 				}
-				fehlerVektor	= fehler3(liste);
-				fehler    		= fehlerVektor[0];
-				anzFehler 		= (int)fehlerVektor[1];
-				System.out.println("Nochmal: ---------------------" + anzFehler + " " + fehler);
-				
-//				if(alpha>0.0001){
-					alpha = alpha*0.95;
-//				}
-//				else{
-//					alpha = 1.5;
-//				}
-//				System.out.println("----------------------------- " + erfolg + " " + anzVb + " " + intervall);
-				anzVb = 0;
+				else  if(a[n - 1] < 0.5 && (int) output == 0) {
+					richtigNegativ++;
+					anzahlNegativ++;
+				}
+				else {
+					System.out.println("Error0 in Auswertung");
+				}
 			}
 			
-//			if(epoche%intervall==0){
-//		
-//				double erfolg = (double)anzVb/(double)intervall;
-//				if(erfolg<1.0/5.0){
-//					alpha = alpha*0.95;
-//				}
-//				else{
-//					alpha = alpha/0.95;
-//				}
-//				System.out.println("----------------------------- " + erfolg + " " + anzVb + " " + intervall);
-//				anzVb = 0;
-//			}
+			// Genauigkeit
+			FitnessQueue[0] = (double)(richtigPositiv+richtigNegativ)/(double)liste.length;
+			// richtigPositiv
+			FitnessQueue[1] = richtigPositiv;
+			// richtigNegativ
+			FitnessQueue[2] = richtigNegativ;
+			// Anzahl Muster 
+			FitnessQueue[3] = ((double)liste.length);
 			
-*/	
+			//(double)(richtigPositiv+richtigNegativ)/(double)liste.length;
 			
-			
-			
+						//			if(anzFehler < minAnzFehler || (anzFehler == minAnzFehler && fehler < minFehler)) {//neue Bestlösung
+						//				minAnzFehler = anzFehler;
+						//				for(int i=0;i<n;i++){
+						//					for(int j=0;j<n;j++){
+						//						optAnzGewichte[i][j] = w[i][j];
+						//					}
+						//				}
+						//		    }
+									
+						//			if(fehler < minFehler && anzFehler == minAnzFehler) {//neue Bestlösung
+						//				minFehler = fehler;
+						//				for(int i=0;i<n;i++){
+						//					for(int j=0;j<n;j++){
+						//						optFehGewichte[i][j] = w[i][j];
+						//					}
+						//				}
+						//				System.out.println("-----------------------------------------------------> neuer Minfehler " + anzFehler + " " + fehler);
+						//				anzVb++;
+						//		    }
+						
+						/*			
+									
+						//			if(epoche%intervall==0){
+									if(anzFehler > minAnzFehler && minAnzFehler <10){//TOP!!!!!!!!!!!!
+								//	if(anzFehler > minAnzFehler +1){//TOP!!!!!!!!!!!!
+						
+						//			if(anzFehler > minAnzFehler ) {
+										for(int i=0;i<n;i++){
+											for(int j=0;j<n;j++){
+												w[i][j] = optFehGewichte[i][j];/////
+											}
+										}
+										for (int s = 0; s < liste.length; s++) {
+											eingabeSchichtInitialisieren(liste[s]);
+											klasse = liste[s][liste[s].length - 1];
+											forward();
+										}
+										fehlerVektor	= fehler3(liste);
+										fehler    		= fehlerVektor[0];
+										anzFehler 		= (int)fehlerVektor[1];
+										System.out.println("Nochmal: ---------------------" + anzFehler + " " + fehler);
+										
+						//				if(alpha>0.0001){
+											alpha = alpha*0.95;
+						//				}
+						//				else{
+						//					alpha = 1.5;
+						//				}
+						//				System.out.println("----------------------------- " + erfolg + " " + anzVb + " " + intervall);
+										anzVb = 0;
+									}
+									
+						//			if(epoche%intervall==0){
+						//		
+						//				double erfolg = (double)anzVb/(double)intervall;
+						//				if(erfolg<1.0/5.0){
+						//					alpha = alpha*0.95;
+						//				}
+						//				else{
+						//					alpha = alpha/0.95;
+						//				}
+						//				System.out.println("----------------------------- " + erfolg + " " + anzVb + " " + intervall);
+						//				anzVb = 0;
+						//			}
+									
+						*/	
+									
+									
+									
 		}
 		
 //		for(int i=0;i<n;i++){
@@ -510,7 +564,7 @@ public class KNN {
 		ergebnis[9] = falschNegativ;
 		ergebnis[10] = (double)richtigPositiv / (double)(richtigPositiv+falschNegativ); 
 		ergebnis[11] = (double)falschPositiv  / (double)(richtigNegativ+falschPositiv);
-
+		
 		
 		 
 		System.out.println("Anzahl Muster:  \t" + ergebnis[0]);
