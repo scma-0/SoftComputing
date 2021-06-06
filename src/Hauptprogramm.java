@@ -7,89 +7,26 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-// Abspeichern der Werte
-// Werte vergleichen - Crossover 
-// Mutation
-
 public class Hauptprogramm {
+
 	static Random r = new Random();
-
 	public static double alpha;
-	public static double[] crossoverWerte;
 
-	public static int Srange = 4;
+	static double s1;
+	static double s2;
+	static double s3;
 
-	static int s1;
-	static int s2;
-	static int s3;
-	static int s4;
+	static int bestFitnessCounter;
 
 	static ArrayList<Double> FitnessArr = new ArrayList<Double>();
-
-	int dim;
-	double[] x; // [2,2] jedes Individum hat ein LÃ¶sungsvektor
-	double signum; // schrittweite
-	// double fitness;
-	public static double lernRate; // rate mit der die schrittweise angepasst werden
+	static ArrayList<Double> SaveStrukturNN = new ArrayList<Double>();
 
 	public static void setRandomVar() {
 		s1 = r.nextInt(10 - 1) + 1;
 		s2 = r.nextInt(10 - 1) + 1;
 		s3 = r.nextInt(10 - 1) + 1;
-		s4 = r.nextInt(10 - 1) + 1;
-		alpha = r.nextDouble() * 3;
+		alpha = r.nextDouble() * 5;
 	}
-
-//	public Hauptprogramm(int anzahlIndDim) {
-//		this.dim = anzahlIndDim;
-//		this.x = new double[anzahlIndDim];
-//		for (int i = 0; i < anzahlIndDim; i++) {
-//			x[i] = 5 * Math.random(); // problemspezifisch geraten
-//			if (Math.random() < 0.5)
-//				x[i] = -x[i];
-//		}
-//
-//		this.signum = Math.random();
-//		lernRate = 1.0 / Math.sqrt((double) (anzahlIndDim)); // Schwefel95
-//		// lernRate = 0.5; // probieren
-//
-//	}
-//
-//	public void mutieren() {
-//		double zz = lernRate * snv();
-//		// schrittweite mutieren
-//		this.signum = this.signum * Math.exp(zz);
-//
-//		for (int i = 0; i < this.x.length; i++) {
-//			zz = this.signum * snv();
-//			this.x[i] = this.x[i] + zz;
-//		}
-//	}
-//
-//	public void rekombinieren(double[] e1, double[] e2) {
-//		alpha = (e1[3] + e2[3]) / 2.;
-//		for (int i = 1; i < Srange; i++) {
-//			double zz = Math.random();
-//			if (zz < 0.5) {
-//				crossoverWerte[i] = e1[i];
-//			}
-//			else {
-//				crossoverWerte[i] = e2[i];
-//			}
-//		}
-//	}
-//
-//	public static double snv() {
-//		// Methode von BoxMuller
-//		double z1 = Math.random();
-//		double z2 = Math.random();
-//		double x1 = Math.cos(z1 * 2 * Math.PI) * Math.sqrt(-2 * Math.log(z2));
-//		double x2 = Math.sin(z1 * 2 * Math.PI) * Math.sqrt(-2 * Math.log(z2));
-//		if (Math.random() < 0.5)
-//			return x1;
-//		else
-//			return x2;
-//	}
 
 	public static void main(String[] args) {
 		Queue<Double> queue = new ConcurrentLinkedQueue<Double>();
@@ -99,10 +36,10 @@ public class Hauptprogramm {
 
 		setRandomVar();
 
-		int[] strukturNN = { s1, s2, s3, (int) alpha };// anzahl Knoten (incl. Bias) pro Hiddenschicht
+		int[] strukturNN = { (int)s1, (int)s2, (int)s3, (int)alpha };// anzahl Knoten (incl. Bias) pro Hiddenschicht
 		KNN netz = new KNN(dimension, strukturNN);
 
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 10; i++) {
 
 			setRandomVar();
 
@@ -116,7 +53,7 @@ public class Hauptprogramm {
 				FileWriter writer = new FileWriter(outputFile, StandardCharsets.UTF_8, true);
 				writer.write("\nTESTWERT von trainieren");
 				for (int j = 0; j < 4; j++) {
-					
+
 					writer.write("\n" + j + ": " + KNN.FitnessQueue[j]);
 
 				}
@@ -126,20 +63,40 @@ public class Hauptprogramm {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+
+			// Abspeichern der s-/Alpha Werte in Arraylist für Zuordnung
+			SaveStrukturNN.add((double) s1);
+			SaveStrukturNN.add((double) s2);
+			SaveStrukturNN.add((double) s3);
+			SaveStrukturNN.add(alpha);
+
 			for (int j = 0; j < 4; j++) {
-				
-				// liest 4 Elemente aus der Queue
+				// fügt Genauigkeit,richtigPositiv,richtigNegativ,Anzahl Muster der ArrayList
+				// hinzu
 				FitnessArr.add(KNN.FitnessQueue[j]);
-				System.out.println(j + ": " + KNN.FitnessQueue[j]);
 			}
 		}
 
-		daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), false);
-
+		//daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), false);
+		//dimension = daten[0].length - 1;
+		double bestFitness = 0;
+		
+		for (int i = 0; i < FitnessArr.size(); i = i + 4) {
+			if (FitnessArr.get(i) > bestFitness) {
+				bestFitness = FitnessArr.get(i);
+				bestFitnessCounter = i;
+			}
+		}
+		
+		
+		s1 = SaveStrukturNN.get(bestFitnessCounter);
+		s2 = SaveStrukturNN.get(bestFitnessCounter+1);
+		s3 = SaveStrukturNN.get(bestFitnessCounter+2);
+		alpha = SaveStrukturNN.get(bestFitnessCounter+3);
+		
+		//netz = new KNN(dimension, strukturNN);
+		
 		netz.evaluieren(daten);
-
-		// fitness(s1, s2, s3, alpha);
 
 		try {
 			File outputFile = new File("output.txt");
@@ -156,9 +113,8 @@ public class Hauptprogramm {
 			e.printStackTrace();
 		}
 
-		for (int i = 0; i < FitnessArr.size(); i++) {
-			System.out.println(FitnessArr.get(i));
-		}
+
+		System.out.println("bestFitnessCounter  " + bestFitnessCounter);
 
 	}
 

@@ -26,7 +26,7 @@ public class KNN {
 	// Parameter für Backprobagation
 	private double alpha  = Hauptprogramm.alpha;    // Fehlerrate fuer Backprobagation
 	private int maxIter   = 1;      // Anzahl Iterationen bei Fehlerminimierung
-	private int maxEpoche = 20000;// Anzahl Iterationen bei Fehlerminimierung
+	private int maxEpoche = 10000;// Anzahl Iterationen bei Fehlerminimierung
 
 	
 	// Für Zwischenspeicherung der Werte 
@@ -520,8 +520,6 @@ public class KNN {
 		int anzahlNegativ  = 0;
 		
 		double[] ergebnis = new double[12];
-
-		double[] zwischenspeichern = new double[12];
 		
 		for (int s = 0; s < liste.length; s++) {
 			eingabeSchichtInitialisieren(liste[s]);
@@ -612,10 +610,6 @@ public class KNN {
 			e.printStackTrace();
 		}
 
-		
-		
-		
-		ergebnis = zwischenspeichern;
 		
 		
 		return ergebnis;
