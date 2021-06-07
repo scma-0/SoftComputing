@@ -39,7 +39,7 @@ public class Hauptprogramm {
 		int[] strukturNN = { (int)s1, (int)s2, (int)s3, (int)alpha };// anzahl Knoten (incl. Bias) pro Hiddenschicht
 		KNN netz = new KNN(dimension, strukturNN);
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 5; i++) {
 
 			setRandomVar();
 
@@ -77,10 +77,10 @@ public class Hauptprogramm {
 			}
 		}
 
-		//daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), false);
-		//dimension = daten[0].length - 1;
-		double bestFitness = 0;
+		daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), false);
+		dimension = daten[0].length - 1;
 		
+		double bestFitness = 0;
 		for (int i = 0; i < FitnessArr.size(); i = i + 4) {
 			if (FitnessArr.get(i) > bestFitness) {
 				bestFitness = FitnessArr.get(i);
@@ -94,8 +94,11 @@ public class Hauptprogramm {
 		s3 = SaveStrukturNN.get(bestFitnessCounter+2);
 		alpha = SaveStrukturNN.get(bestFitnessCounter+3);
 		
-		//netz = new KNN(dimension, strukturNN);
 		
+		
+		netz = new KNN(dimension, strukturNN);
+		
+		netz.trainieren(daten);
 		netz.evaluieren(daten);
 
 		try {
