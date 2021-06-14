@@ -3,6 +3,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -21,6 +26,8 @@ public class Hauptprogramm {
 	static ArrayList<Double> FitnessArr = new ArrayList<Double>();
 	static ArrayList<Double> SaveStrukturNN = new ArrayList<Double>();
 
+	static double[] testArr = new double[4];
+	
 	public static void setRandomVar() {
 		s1 = r.nextInt(10 - 1) + 1;
 		s2 = r.nextInt(10 - 1) + 1;
@@ -39,7 +46,9 @@ public class Hauptprogramm {
 		int[] strukturNN = { (int)s1, (int)s2, (int)s3, (int)alpha };// anzahl Knoten (incl. Bias) pro Hiddenschicht
 		KNN netz = new KNN(dimension, strukturNN);
 
-		for (int i = 0; i < 5; i++) {
+		HashMap<Integer, List<Double>> gewichte = new HashMap<Integer, List<Double>>();
+		
+		for (int i = 0; i < 3; i++) {
 
 			setRandomVar();
 
@@ -47,6 +56,13 @@ public class Hauptprogramm {
 			netz = new KNN(dimension, strukturNN);
 
 			netz.trainieren(daten);// Verlustfunktion min
+
+			
+			gewichte.put(i, KNN.saveW);
+			
+			for (Entry<Integer, List<Double>> entry : gewichte.entrySet()) {
+			    System.out.println(entry.getKey() + "/" + entry.getValue());
+			}
 
 			try {
 				File outputFile = new File("output.txt");
@@ -118,7 +134,16 @@ public class Hauptprogramm {
 
 
 		System.out.println("bestFitnessCounter  " + bestFitnessCounter);
-
+		
+		HashMap<Double, List<Double>> testMap = new HashMap<Double, List<Double>>();
+		testMap.put(FitnessArr.get(0), SaveStrukturNN);
+		
+//		KNN.ausgabeW();
+//		KNN.speicherW();
+		for (Entry<Integer, List<Double>> entry : gewichte.entrySet()) {
+		    System.out.println(entry.getKey() + "/" + entry.getValue());
+		}
+//		System.out.println(Arrays.asList(gewichte)); // method 1
 	}
 
 }

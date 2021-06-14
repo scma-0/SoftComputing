@@ -2,14 +2,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class KNN {
 	// Feedforward-Neuronales Netz variabler Anzahl an Hiddenschichten
 
-	private int m; 				// Anzahl Schichten
-	private int n; 				// Anzahl Knoten (insgesamt ueber alle Schichten)
+	public int m; 				// Anzahl Schichten
+	public int n; 				// Anzahl Knoten (insgesamt ueber alle Schichten)
 	public int[][] netz; 		// Enthaelt pro Schicht netz[i] die enthaltenen Knotennummern
 	public double[][] w; 		// Gewichte
 
@@ -26,16 +30,25 @@ public class KNN {
 	// Parameter für Backprobagation
 	private double alpha  = Hauptprogramm.alpha;    // Fehlerrate fuer Backprobagation
 	private int maxIter   = 1;      // Anzahl Iterationen bei Fehlerminimierung
-	private int maxEpoche = 5000;// Anzahl Iterationen bei Fehlerminimierung
+	private int maxEpoche = 100;// Anzahl Iterationen bei Fehlerminimierung
 
 	
 	// Für Zwischenspeicherung der Werte 
 	static double[] FitnessQueue = new double[4];
+	
+	//Speicherung der Gewichte
+	static ArrayList<Double> saveW = new ArrayList<Double>();
+	
+	int wCounter = 0;
 
-
+//	static HashMap<Integer, List<Double>> gewichte = new HashMap<Integer, List<Double>>();
+	
 	public KNN(int anzahlEingabewerte, int[] anzahlKnotenProHiddenSchicht) {
 
-		this.m = anzahlKnotenProHiddenSchicht.length + 2;// Anzahl Hiddenschichte + Eingabeschicht + Ausgabeschicht
+		this.m = anzahlKnotenProHiddenSchicht.length -1 + 2;
+		//-1 da Alpha in dem strukturNN Array mit aufgenommen wird
+		//+ 2 wegen Anzahl Hiddenschichte + Eingabeschicht + Ausgabeschicht
+		
 		netz = new int[m][];
 		int knotenNr = 0;
 
@@ -165,85 +178,9 @@ public class KNN {
 			FitnessQueue[2] = richtigNegativ;
 			// Anzahl Muster 
 			FitnessQueue[3] = ((double)liste.length);
-			
-			//(double)(richtigPositiv+richtigNegativ)/(double)liste.length;
-			
-						//			if(anzFehler < minAnzFehler || (anzFehler == minAnzFehler && fehler < minFehler)) {//neue Bestlösung
-						//				minAnzFehler = anzFehler;
-						//				for(int i=0;i<n;i++){
-						//					for(int j=0;j<n;j++){
-						//						optAnzGewichte[i][j] = w[i][j];
-						//					}
-						//				}
-						//		    }
-									
-						//			if(fehler < minFehler && anzFehler == minAnzFehler) {//neue Bestlösung
-						//				minFehler = fehler;
-						//				for(int i=0;i<n;i++){
-						//					for(int j=0;j<n;j++){
-						//						optFehGewichte[i][j] = w[i][j];
-						//					}
-						//				}
-						//				System.out.println("-----------------------------------------------------> neuer Minfehler " + anzFehler + " " + fehler);
-						//				anzVb++;
-						//		    }
-						
-						/*			
-									
-						//			if(epoche%intervall==0){
-									if(anzFehler > minAnzFehler && minAnzFehler <10){//TOP!!!!!!!!!!!!
-								//	if(anzFehler > minAnzFehler +1){//TOP!!!!!!!!!!!!
-						
-						//			if(anzFehler > minAnzFehler ) {
-										for(int i=0;i<n;i++){
-											for(int j=0;j<n;j++){
-												w[i][j] = optFehGewichte[i][j];/////
-											}
-										}
-										for (int s = 0; s < liste.length; s++) {
-											eingabeSchichtInitialisieren(liste[s]);
-											klasse = liste[s][liste[s].length - 1];
-											forward();
-										}
-										fehlerVektor	= fehler3(liste);
-										fehler    		= fehlerVektor[0];
-										anzFehler 		= (int)fehlerVektor[1];
-										System.out.println("Nochmal: ---------------------" + anzFehler + " " + fehler);
 										
-						//				if(alpha>0.0001){
-											alpha = alpha*0.95;
-						//				}
-						//				else{
-						//					alpha = 1.5;
-						//				}
-						//				System.out.println("----------------------------- " + erfolg + " " + anzVb + " " + intervall);
-										anzVb = 0;
-									}
-									
-						//			if(epoche%intervall==0){
-						//		
-						//				double erfolg = (double)anzVb/(double)intervall;
-						//				if(erfolg<1.0/5.0){
-						//					alpha = alpha*0.95;
-						//				}
-						//				else{
-						//					alpha = alpha/0.95;
-						//				}
-						//				System.out.println("----------------------------- " + erfolg + " " + anzVb + " " + intervall);
-						//				anzVb = 0;
-						//			}
-									
-						*/	
-									
-									
-									
 		}
-		
-//		for(int i=0;i<n;i++){
-//			for(int j=0;j<n;j++){
-//				w[i][j] = optAnzGewichte[i][j];
-//			}
-//		}
+		speicherW();
 	}
 
 	
@@ -427,13 +364,13 @@ public class KNN {
 					int indexj = netz[l + 1][j];
 					if (!bias[indexj]) {
 						w[indexi][indexj] = Math.random();
+						
 						if (Math.random() < 0.5)
 							w[indexi][indexj] = -w[indexi][indexj];
 					}
 				}
 			}
 		}
-
 	}
 	
 	private void eingabeSchichtInitialisieren(double[] input) {
@@ -489,6 +426,7 @@ public class KNN {
 		}		
 		return fehler;
 	}
+	
 	private double[] fehler3(double[][] liste) {
 		double[] fehler = new double[2];
 		fehler[0] = 0.0;
@@ -855,11 +793,31 @@ public class KNN {
 					if (round != 0)
 						System.out.println(i + " " + j + " " + round);
 				}
-				// System.out.println();
+//				System.out.println();
 			}
-			System.out.println();
+			System.out.println(n);
+			System.out.println(m);
+			
 		}
 
+		public void speicherW() {
+//			saveW.add(1000000+(double)wCounter);
+			saveW.clear();
+			//saveW.removeAll(saveW);
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < n; j++) {
+					double preci = 1000;
+					double round = ((int) (w[i][j] * preci)) / preci;
+					if (round != 0) {
+						saveW.add((double)round);
+					}
+				}
+			}
+//			gewichte.put(wCounter, saveW);
+			System.out.println(Arrays.deepToString(w));
+			wCounter += 1;
+			
+		}
 		
 		
 		
