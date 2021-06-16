@@ -4,18 +4,19 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Collections;
+import java.util.Comparator;
+import java.lang.Comparable;
 
 public class KNN {
 	// Feedforward-Neuronales Netz variabler Anzahl an Hiddenschichten
 
-	public int m; 				// Anzahl Schichten
-	public int n; 				// Anzahl Knoten (insgesamt ueber alle Schichten)
-	public int[][] netz; 		// Enthaelt pro Schicht netz[i] die enthaltenen Knotennummern
-	public double[][] w; 		// Gewichte
+	public static int bestN; 			// Anzahl Schichten von bester Fitness
+	
+	public static int m; 				// Anzahl Schichten
+	public static int n; 				// Anzahl Knoten (insgesamt ueber alle Schichten)
+	public int[][] netz; 				// Enthaelt pro Schicht netz[i] die enthaltenen Knotennummern
+	public static double[][] w; 		// Gewichte
 
 	// Knoteninformationen, jeweils durch ein Array gespeichert, Index =
 	// Knotennummer
@@ -30,16 +31,18 @@ public class KNN {
 	// Parameter für Backprobagation
 	private double alpha  = Hauptprogramm.alpha;    // Fehlerrate fuer Backprobagation
 	private int maxIter   = 1;      // Anzahl Iterationen bei Fehlerminimierung
-	private int maxEpoche = 100;// Anzahl Iterationen bei Fehlerminimierung
+	private int maxEpoche = 5000;// Anzahl Iterationen bei Fehlerminimierung
 
 	
 	// Für Zwischenspeicherung der Werte 
 	static double[] FitnessQueue = new double[4];
 	
+	public static double bestFitness = 0; 
+	static double fitness = 0;
 	//Speicherung der Gewichte
-	static ArrayList<Double> saveW = new ArrayList<Double>();
+	public static ArrayList<Double> saveW = new ArrayList<Double>();
+
 	
-	int wCounter = 0;
 
 //	static HashMap<Integer, List<Double>> gewichte = new HashMap<Integer, List<Double>>();
 	
@@ -172,71 +175,40 @@ public class KNN {
 			
 			// Genauigkeit
 			FitnessQueue[0] = (double)(richtigPositiv+richtigNegativ)/(double)liste.length;
+			fitness = (double)(richtigPositiv+richtigNegativ)/(double)liste.length;
 			// richtigPositiv
 			FitnessQueue[1] = richtigPositiv;
 			// richtigNegativ
 			FitnessQueue[2] = richtigNegativ;
 			// Anzahl Muster 
 			FitnessQueue[3] = ((double)liste.length);
-										
+			
+			
+			if (epoche == maxEpoche) {
+				if (bestFitness < fitness) {
+					bestFitness = fitness;
+					speicherW();
+				}
+				try {
+					File outputFile = new File("output.txt");
+					FileWriter writer = new FileWriter(outputFile, StandardCharsets.UTF_8, true);
+					writer.write(
+							"\n" +
+							"Gewichte für beste Fitness " + bestFitness + 
+							"\n" + Arrays.asList(saveW) + "\n" + "gehören zu Werten die folgen"
+							);
+					writer.flush();
+					writer.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}						
 		}
-		speicherW();
+		
+		System.out.println("bestFitness " + bestFitness);
+		
 	}
-
-	
-//	public void trainierenStochastisch(double[][] liste) {
-//
-//		double[][] optGewichte = new double[n][n];
-//		double klasse;
-//		double fehler;
-//		gewichteInitialisieren();
-//
-//		boolean stop  	 = false;
-//		int anzFehler 	 = 0;
-//		int minAnzFehler = Integer.MAX_VALUE;
-//		int epoche    	 = 0;
-//		boolean goBack 	 = false;
-//		int zaehler 	 = 0;
-//		
-//		while (!stop) {
-//			epoche++;
-//			
-//			int muster = (int)(Math.random()*liste.length);
-//			for (int s = 0; s < liste.length; s++) {
-//				if(muster > liste.length-1)muster=0;
-//				eingabeSchichtInitialisieren(liste[muster]);
-//				klasse = liste[muster][liste[muster].length - 1];
-//				forward();
-//				backward(klasse);
-//				muster++;
-//			}
-//
-//			double fehlerVektor[] = fehler3(liste);
-//			fehler    			  = fehlerVektor[0];
-//			anzFehler 			  = (int)fehlerVektor[1];
-//			
-//			if(anzFehler < minAnzFehler) {//neue Bestlösung
-//				minAnzFehler = anzFehler;
-//				for(int i=0;i<n;i++){
-//					for(int j=0;j<n;j++){
-//						optGewichte[i][j] = w[i][j];
-//					}
-//				}
-//				alpha *= 1.1;
-//		    }
-//			else if(anzFehler > minAnzFehler){//Verschlechterung
-//				for(int i=0;i<n;i++){
-//					for(int j=0;j<n;j++){
-//						w[i][j] = optGewichte[i][j];
-//					}
-//				}
-//				alpha *= 0.9;
-//			}
-//			
-//			System.out.println("-Epoche: " + epoche + " " + anzFehler + " " + fehler + " minAnzFehler " + minAnzFehler + " " + goBack + " " + alpha + " " + zaehler);
-//			if (epoche >= maxEpoche || anzFehler == 0)	stop = true;
-//		}
-//	}
 
 	/*
 	 * backward-Pass
@@ -447,8 +419,8 @@ public class KNN {
 	 * Methoden zur Evaluierung
 	 */
 	
-	public double[] evaluieren(double[][] liste) {
-		//fuer Bankenbeispiel
+	public double[] evaluieren(double[][] liste){
+		
 		double output;
 		int falschPositiv  = 0;
 		int falschNegativ  = 0;
@@ -458,6 +430,9 @@ public class KNN {
 		int anzahlNegativ  = 0;
 		
 		double[] ergebnis = new double[12];
+		
+		// Aufruf der Methode zu Gewichteübergabe
+		gewichteÜbergeben();
 		
 		for (int s = 0; s < liste.length; s++) {
 			eingabeSchichtInitialisieren(liste[s]);
@@ -783,7 +758,7 @@ public class KNN {
 			System.out.println();
 		}
 
-		public void ausgabeW() {
+		public static void ausgabeW() {
 			System.out.println("Ausgabe der Gewichte");
 
 			for (int i = 0; i < n; i++) {
@@ -801,27 +776,45 @@ public class KNN {
 		}
 
 		public void speicherW() {
-//			saveW.add(1000000+(double)wCounter);
 			saveW.clear();
-			//saveW.removeAll(saveW);
 			for (int i = 0; i < n; i++) {
 				for (int j = 0; j < n; j++) {
 					double preci = 1000;
 					double round = ((int) (w[i][j] * preci)) / preci;
-					if (round != 0) {
-						saveW.add((double)round);
-					}
+					saveW.add((double)round);
 				}
 			}
-//			gewichte.put(wCounter, saveW);
+			bestN = n; 
+			System.out.println("n " + n);
+			System.out.println("bestN " + bestN);
+			System.out.println(Arrays.asList(saveW));
 			System.out.println(Arrays.deepToString(w));
-			wCounter += 1;
+		}
+		
+		public void gewichteÜbergeben(){
+			int counter = 0; 
+
+			// übergeben der Gewichte an w 
+			for (int i = 0; i < bestN; i++) {
+				for (int j = 0; j < bestN; j++) {
+					w[i][j] = saveW.get(counter);
+					counter++;
+				}
+			}
+//			Sort2DArrayBasedOnColumnNumber(w,w.length);
 			
 		}
 		
-		
-		
-		
+		public static  void Sort2DArrayBasedOnColumnNumber (double[][] array, final int columnNumber){
+	        Arrays.sort(array, new Comparator<double[]>() {
+	            @Override
+	            public int compare(double[] first, double[] second) {
+	               if(first[columnNumber-1] > second[columnNumber-1]) return 1;
+	               else return -1;
+	            }
+	        });
+	    }
+
 		
 		
 		

@@ -35,7 +35,7 @@ public class Hauptprogramm {
 		alpha = r.nextDouble() * 5;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		Queue<Double> queue = new ConcurrentLinkedQueue<Double>();
 
 		double[][] daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), true);
@@ -46,9 +46,8 @@ public class Hauptprogramm {
 		int[] strukturNN = { (int)s1, (int)s2, (int)s3, (int)alpha };// anzahl Knoten (incl. Bias) pro Hiddenschicht
 		KNN netz = new KNN(dimension, strukturNN);
 
-		HashMap<Integer, List<Double>> gewichte = new HashMap<Integer, List<Double>>();
 		
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 5; i++) {
 
 			setRandomVar();
 
@@ -56,13 +55,6 @@ public class Hauptprogramm {
 			netz = new KNN(dimension, strukturNN);
 
 			netz.trainieren(daten);// Verlustfunktion min
-
-			
-			gewichte.put(i, KNN.saveW);
-			
-			for (Entry<Integer, List<Double>> entry : gewichte.entrySet()) {
-			    System.out.println(entry.getKey() + "/" + entry.getValue());
-			}
 
 			try {
 				File outputFile = new File("output.txt");
@@ -114,7 +106,7 @@ public class Hauptprogramm {
 		
 		netz = new KNN(dimension, strukturNN);
 		
-		netz.trainieren(daten);
+		//netz.trainieren(daten);
 		netz.evaluieren(daten);
 
 		try {
@@ -134,16 +126,7 @@ public class Hauptprogramm {
 
 
 		System.out.println("bestFitnessCounter  " + bestFitnessCounter);
-		
-		HashMap<Double, List<Double>> testMap = new HashMap<Double, List<Double>>();
-		testMap.put(FitnessArr.get(0), SaveStrukturNN);
-		
-//		KNN.ausgabeW();
-//		KNN.speicherW();
-		for (Entry<Integer, List<Double>> entry : gewichte.entrySet()) {
-		    System.out.println(entry.getKey() + "/" + entry.getValue());
-		}
-//		System.out.println(Arrays.asList(gewichte)); // method 1
+
 	}
 
 }
