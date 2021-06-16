@@ -3,11 +3,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -17,17 +12,21 @@ public class Hauptprogramm {
 	static Random r = new Random();
 	public static double alpha;
 
+	// Variablen für strukturNN Array werden rng befüllt
 	static double s1;
 	static double s2;
 	static double s3;
 
+	// hält besten FitnessWert anhand des ArrayIndexes fest 
 	static int bestFitnessCounter;
 
+	// enthält Genauigkeit,richtigPositiv,richtigNegativ,Anzahl Muster
 	static ArrayList<Double> FitnessArr = new ArrayList<Double>();
+	// Abspeichern der s-/Alpha Werte in Arraylist welche für Zuordnung dienen
 	static ArrayList<Double> SaveStrukturNN = new ArrayList<Double>();
-
-	static double[] testArr = new double[4];
 	
+	
+	// rng Setzung der Variablen
 	public static void setRandomVar() {
 		s1 = r.nextInt(10 - 1) + 1;
 		s2 = r.nextInt(10 - 1) + 1;
@@ -47,8 +46,9 @@ public class Hauptprogramm {
 		KNN netz = new KNN(dimension, strukturNN);
 
 		
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 10; i++) {
 
+			// Variablen für strukturNN werden rng gesetzt
 			setRandomVar();
 
 			strukturNN = strukturNN;// anzahl Knoten (incl. Bias) pro Hiddenschicht
@@ -56,6 +56,7 @@ public class Hauptprogramm {
 
 			netz.trainieren(daten);// Verlustfunktion min
 
+			// Abspeichern Genauigkeit,richtigPositiv,richtigNegativ,Anzahl Muster der ArrayList in externer output.txt Datei
 			try {
 				File outputFile = new File("output.txt");
 				FileWriter writer = new FileWriter(outputFile, StandardCharsets.UTF_8, true);
@@ -106,9 +107,8 @@ public class Hauptprogramm {
 		
 		netz = new KNN(dimension, strukturNN);
 		
-		//netz.trainieren(daten);
 		netz.evaluieren(daten);
-
+		// beste Werte für  werden in externer output.txt abgespeichert 
 		try {
 			File outputFile = new File("output.txt");
 			FileWriter writer = new FileWriter(outputFile, StandardCharsets.UTF_8, true);

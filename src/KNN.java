@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.lang.Comparable;
+
 
 public class KNN {
 	// Feedforward-Neuronales Netz variabler Anzahl an Hiddenschichten
@@ -43,8 +41,6 @@ public class KNN {
 	public static ArrayList<Double> saveW = new ArrayList<Double>();
 
 	
-
-//	static HashMap<Integer, List<Double>> gewichte = new HashMap<Integer, List<Double>>();
 	
 	public KNN(int anzahlEingabewerte, int[] anzahlKnotenProHiddenSchicht) {
 
@@ -135,7 +131,7 @@ public class KNN {
 			System.out.println("-Epoche: " + epoche + " " + anzFehler + " " + fehler + " minAnzFehler " + minAnzFehler + " minFehler " + minFehler +" " + goBack + " " + alpha);
 			if (epoche >= maxEpoche || anzFehler == 0)	stop = true;
 			
-			//fuer Bankenbeispiel
+			
 			double output;
 			int falschPositiv  = 0;
 			int falschNegativ  = 0;
@@ -145,8 +141,6 @@ public class KNN {
 			int anzahlNegativ  = 0;
 			
 			double[] ergebnis = new double[12];
-
-			double[] zwischenspeichern = new double[12];
 			
 			for (int s = 0; s < liste.length; s++) {
 				eingabeSchichtInitialisieren(liste[s]);
@@ -183,12 +177,14 @@ public class KNN {
 			// Anzahl Muster 
 			FitnessQueue[3] = ((double)liste.length);
 			
-			
+			// für letzten Wert wird die Fitness mit der besten Fitness verglichen
+			// wenn höher übernommen wenn nicht wird alter Wert behalten
 			if (epoche == maxEpoche) {
 				if (bestFitness < fitness) {
 					bestFitness = fitness;
 					speicherW();
 				}
+				// beste Gewichte werden in externer output.txt abgespeichert 
 				try {
 					File outputFile = new File("output.txt");
 					FileWriter writer = new FileWriter(outputFile, StandardCharsets.UTF_8, true);
@@ -205,7 +201,7 @@ public class KNN {
 				}
 			}						
 		}
-		
+		// Orientierung welcher "Satz an Daten" für die Evaluierung verwendet wird
 		System.out.println("bestFitness " + bestFitness);
 		
 	}
@@ -306,16 +302,6 @@ public class KNN {
 		return (aktivierungsFunktion(x) * (1 - aktivierungsFunktion(x)));
 	}
 
-//	private double aktivierungsFunktion(double x) {
-//		if(x>=0)return x;
-//		else    return 0;
-//	}
-//
-//	private double ableitungAktivierungsFunktion(double x) {
-//		if(x>=0)return 1;
-//		else    return 0;
-//	}
-//	
 	
 	
 	/*
@@ -365,10 +351,6 @@ public class KNN {
 
 	}
 
-	
-	
-	
-	
 
 	/*
 	 * Hilfsmethoden zur Evaluation
@@ -494,9 +476,8 @@ public class KNN {
 		System.out.println("falsch Positiv: \t" + ergebnis[7]);
 		
 		
-		
-		
 
+		// Ausgabe der Werte in einer externen output.txt Datei
 		try {
 			File outputFile = new File("output.txt");
 			FileWriter writer = new FileWriter(outputFile, StandardCharsets.UTF_8, true);
@@ -522,9 +503,6 @@ public class KNN {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		
-		
 		return ergebnis;
 	}
 
@@ -591,55 +569,7 @@ public class KNN {
 			
 			return out;
 		}
-
-	 
-	 
-	 
-	 
-	 
-	 
-/*
- * Generierung des Vorlesungsbeispiel; hier können Forward/Backward geübt werden	 
- */
-	 
-//		public void berechnungVorlesungsBeispiel(double[][] liste) {
-//			//hiermit wurde der forward und backward-Pass beschrieben
-//			double klasse;
-//			gewichteInitialisieren();
-//
-//			w[0][4] = +0.1;
-//			w[1][4] = -0.2;
-//			w[2][4] = +0.3;
-//			
-//			w[0][5] = +0.4;
-//			w[1][5] = -0.8;
-//			w[2][5] = +0.7;
-//			
-//			w[3][6] = +0.3;
-//			w[4][6] = -0.4;
-//			w[5][6] = -0.2;
-//			
-//			
-//			eingabeSchichtInitialisieren(liste[0]);
-//			klasse = liste[0][liste[0].length - 1];
-//
-//			//this.ausgabeEingabeSchicht();
-//			//this.ausgabeW();
-//			
-//			alpha = 1.0;
-//			
-//			for(int i=0;i<100;i++){
-//				forward();
-//				backward(klasse);
-//				System.out.println(i + " " + a[n-1]);
-//			}
-//			
-////			this.ausgabeInputwerte();
-////			this.ausgabeKnotenwerte();
-////			this.ausgabeDelta();
-////			this.ausgabeW();
-//		}
-//		
+	
 /*
  * Methoden zur  Ausgabe der Netzparameter
  */
@@ -768,11 +698,9 @@ public class KNN {
 					if (round != 0)
 						System.out.println(i + " " + j + " " + round);
 				}
-//				System.out.println();
 			}
 			System.out.println(n);
 			System.out.println(m);
-			
 		}
 
 		public void speicherW() {
@@ -785,10 +713,10 @@ public class KNN {
 				}
 			}
 			bestN = n; 
-			System.out.println("n " + n);
-			System.out.println("bestN " + bestN);
-			System.out.println(Arrays.asList(saveW));
-			System.out.println(Arrays.deepToString(w));
+//			System.out.println("n " + n);
+//			System.out.println("bestN " + bestN);
+//			System.out.println(Arrays.asList(saveW));
+//			System.out.println(Arrays.deepToString(w));
 		}
 		
 		public void gewichteÜbergeben(){
@@ -801,138 +729,5 @@ public class KNN {
 					counter++;
 				}
 			}
-//			Sort2DArrayBasedOnColumnNumber(w,w.length);
-			
 		}
-		
-		public static  void Sort2DArrayBasedOnColumnNumber (double[][] array, final int columnNumber){
-	        Arrays.sort(array, new Comparator<double[]>() {
-	            @Override
-	            public int compare(double[] first, double[] second) {
-	               if(first[columnNumber-1] > second[columnNumber-1]) return 1;
-	               else return -1;
-	            }
-	        });
-	    }
-
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-//		public void trainierenBatch(double[][] liste) {
-//
-//			double klasse;
-//			double[] teilFehler;
-//			double fehler       = 0.0;
-//			int anzFehler 		= 0;
-//			int minAnzFehler 	= Integer.MAX_VALUE;
-//			boolean stop  		= false;
-//			int epoche    		= 0;//hier nicht wirklich die Epoche!
-//			int zaehler 		= 0;
-//
-//			gewichteInitialisieren();
-//			
-//			while (!stop) {
-//				epoche++;
-//				deltBatchInitialisieren();
-//				
-//				for (int s = 0; s < batchSize; s++) {
-//					int muster = (int)(Math.random()*liste.length);
-//					eingabeSchichtInitialisieren(liste[muster]);
-//					klasse = liste[muster][liste[muster].length - 1];
-//					forward();
-//					deltBatchAktualisieren(klasse);
-//				}
-//				gewichteAktualisierenBatch(liste);
-//			
-//				teilFehler = fehler3(liste);
-//				fehler     = teilFehler[0];
-//				anzFehler  = (int)teilFehler[1]; 
-//				if(anzFehler <= minAnzFehler) {//neue Bestlösung
-//					minAnzFehler = anzFehler;
-//			    }
-//				System.out.println("-Epoche: " + epoche + " " + anzFehler + " - Fehler " + fehler + " minAnzFehler " + minAnzFehler + " " + alpha + " " + zaehler);
-//				if (epoche >= maxEpoche || anzFehler == 0)	stop = true;
-//			}
-//		}
-//		
-//		public void deltBatchInitialisieren(){
-//			for (int i = 0; i<n; i++) {
-//				for (int j = 0; j<n; j++) {
-//					gradient[i][j] = 0.0;	
-//				}								
-//			}
-//		}
-//		
-//			
-//		private void deltBatchAktualisieren(double klasse) {
-//			
-//			deltBatchAusgabeSchicht(klasse);
-//
-//			int ausgabeSchicht = netz.length - 1;
-//			
-//			for (int l = ausgabeSchicht - 1; l >= 0; l--) {
-//				for (int nri = 0; nri < netz[l].length; nri++) {
-//					int i = netz[l][nri];
-//					delta[i] = 0.0;
-//					if (!bias[i]) {
-//						double sum = 0;
-//						for (int nrj = 0; nrj < netz[l + 1].length; nrj++) {
-//							int j = netz[l + 1][nrj];
-//							sum  += w[i][j] * delta[j];
-//						}
-//						delta[i] = ableitungAktivierungsFunktion(in[i]) * sum;
-//					}
-//				}
-//			}
-//			//Gradientenanteil für Muster berechnen
-//			for (int l = 0; l < netz.length - 1; l++) {
-//				for (int nri = 0; nri < netz[l].length; nri++) {
-//					int i = netz[l][nri];
-//
-//					for (int nrj = 0; nrj < netz[l + 1].length; nrj++) {
-//						int j = netz[l + 1][nrj];
-//						if (!bias[j]) {
-//							double teilGradient = a[i] * delta[j];
-//							gradient[i][j]      = gradient[i][j] + teilGradient;//Gradientenabstieg
-//						}
-//					}
-//				}
-//			}
-//		}
-//		private void deltBatchAusgabeSchicht(double klasse) {
-//			int ausgabeSchicht = netz.length - 1;
-//			for (int nrj = 0; nrj < netz[ausgabeSchicht].length; nrj++) {
-//				int j 			= netz[ausgabeSchicht][nrj];
-//				double yj 		= klasse;
-//				delta[j]  		= ableitungAktivierungsFunktion(in[j]) * (a[j]-yj);
-//			}
-//		}
-		
-		
-		
-//		public void gewichteAktualisierenBatch(double[][] liste){
-//			for (int l = 0; l < netz.length - 1; l++) {
-//				for (int nri = 0; nri < netz[l].length; nri++) {
-//					int i = netz[l][nri];
-//					for (int nrj = 0; nrj < netz[l + 1].length; nrj++) {
-//						int j = netz[l + 1][nrj];
-//						if (!bias[j]) {
-//							w[i][j] = w[i][j] - (1.0/batchSize)*alpha*gradient[i][j];//Gradientenabstieg
-//						}
-//					}
-//				}
-//			}
-//		}
-		
 }
