@@ -1,99 +1,132 @@
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Queue;
 import java.util.Random;
-
-import javax.swing.JSpinner.ListEditor;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Hauptprogramm {
-	static Random r = new Random();
 
-	public static double fitness(int s1, int s2, double alpha) {
+	static Random r = new Random();
+	public static double alpha;
+
+	// Variablen für strukturNN Array werden rng befüllt
+	static double s1;
+	static double s2;
+	static double s3;
+
+	// hält besten FitnessWert anhand des ArrayIndexes fest 
+	static int bestFitnessCounter;
+
+	// enthält Genauigkeit,richtigPositiv,richtigNegativ,Anzahl Muster
+	static ArrayList<Double> FitnessArr = new ArrayList<Double>();
+	// Abspeichern der s-/Alpha Werte in Arraylist welche für Zuordnung dienen
+	static ArrayList<Double> SaveStrukturNN = new ArrayList<Double>();
+	
+	
+	// rng Setzung der Variablen
+	public static void setRandomVar() {
+		s1 = r.nextInt(10 - 1) + 1;
+		s2 = r.nextInt(10 - 1) + 1;
+		s3 = r.nextInt(10 - 1) + 1;
+		alpha = r.nextDouble() * 5;
+	}
+
+	public static void main(String[] args) throws IOException {
+		Queue<Double> queue = new ConcurrentLinkedQueue<Double>();
+
 		double[][] daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), true);
 		int dimension = daten[0].length - 1;
 
-	/**	s1 = r.nextInt(10);
-		s2 = r.nextInt(10);
-		s3 = r.nextInt(10);
-		alpha = r.nextDouble() + 1.00;**/
+		setRandomVar();
 
-		int[] strukturNN = { s1, s2, (int) alpha };// anzahl Knoten (incl. Bias) pro Hiddenschicht
+		int[] strukturNN = { (int)s1, (int)s2, (int)s3, (int)alpha };// anzahl Knoten (incl. Bias) pro Hiddenschicht
 		KNN netz = new KNN(dimension, strukturNN);
+
 		
-		netz.trainieren(daten);// Verlustfunktion min
-		for (int i = 0; i < strukturNN.length; i++) {
-			
+		for (int i = 0; i < 10; i++) {
+
+			// Variablen für strukturNN werden rng gesetzt
+			setRandomVar();
+
+			strukturNN = strukturNN;// anzahl Knoten (incl. Bias) pro Hiddenschicht
+			netz = new KNN(dimension, strukturNN);
+
+			netz.trainieren(daten);// Verlustfunktion min
+
+			// Abspeichern Genauigkeit,richtigPositiv,richtigNegativ,Anzahl Muster der ArrayList in externer output.txt Datei
+			try {
+				File outputFile = new File("output.txt");
+				FileWriter writer = new FileWriter(outputFile, StandardCharsets.UTF_8, true);
+				writer.write("\nTESTWERT von trainieren");
+				for (int j = 0; j < 4; j++) {
+
+					writer.write("\n" + j + ": " + KNN.FitnessQueue[j]);
+
+				}
+				writer.write("\n" + "s1: \t" + s1 + "\ns2: \t" + s2 + "\ns3: \t" + s3 + "\nalpha: \t" + alpha + "\n\n");
+				writer.flush();
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			// Abspeichern der s-/Alpha Werte in Arraylist für Zuordnung
+			SaveStrukturNN.add((double) s1);
+			SaveStrukturNN.add((double) s2);
+			SaveStrukturNN.add((double) s3);
+			SaveStrukturNN.add(alpha);
+
+			for (int j = 0; j < 4; j++) {
+				// fügt Genauigkeit,richtigPositiv,richtigNegativ,Anzahl Muster der ArrayList
+				// hinzu
+				FitnessArr.add(KNN.FitnessQueue[j]);
+			}
 		}
+
 		daten = Einlesen.einlesenDiabetes(new File("diabetes.csv"), false);
-
+		dimension = daten[0].length - 1;
+		
+		double bestFitness = 0;
+		for (int i = 0; i < FitnessArr.size(); i = i + 4) {
+			if (FitnessArr.get(i) > bestFitness) {
+				bestFitness = FitnessArr.get(i);
+				bestFitnessCounter = i;
+			}
+		}
+		
+		
+		s1 = SaveStrukturNN.get(bestFitnessCounter);
+		s2 = SaveStrukturNN.get(bestFitnessCounter+1);
+		s3 = SaveStrukturNN.get(bestFitnessCounter+2);
+		alpha = SaveStrukturNN.get(bestFitnessCounter+3);
+		
+		
+		
+		netz = new KNN(dimension, strukturNN);
+		
 		netz.evaluieren(daten);
+		// beste Werte für  werden in externer output.txt abgespeichert 
+		try {
+			File outputFile = new File("output.txt");
+			FileWriter writer = new FileWriter(outputFile, StandardCharsets.UTF_8, true);
+			writer.write("\n" + "s1: \t" + s1 + "\ns2: \t" + s2 + "\ns3: \t" + s3 + "\nalpha: \t" + alpha + "\n\n");
+			writer.flush();
+			writer.close();
 
-		// netz.evaluierenGUIII(daten);
-
-		return 0.08;
-	}
-
-	int dim;
-	double[] x; // [2,2] jedes Individum hat ein LÃƒÂ¶sungsvektor
-	double signum; // schrittweite
-	double fitness;
-	public static double lernRate; // rate mit der die schrittweise angepasst werden
-
-	public Hauptprogramm(int anzahlIndDim) {
-		this.dim = anzahlIndDim;
-		this.x = new double[anzahlIndDim];
-		for (int i = 0; i < anzahlIndDim; i++) {
-			x[i] = 5 * Math.random(); // problemspezifisch geraten
-			if (Math.random() < 0.5)
-				x[i] = -x[i];
+			queue.offer(Double.valueOf(s1));
+			queue.offer(Double.valueOf(s2));
+			queue.offer(Double.valueOf(s3));
+			queue.offer(alpha);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
-		this.signum = Math.random();
-		lernRate = 1.0 / Math.sqrt((double) (anzahlIndDim)); // Schwefel95
-		// lernRate = 0.5; // probieren
 
-	}
+		System.out.println("bestFitnessCounter  " + bestFitnessCounter);
 
-	public void mutieren() {
-		double zz = lernRate * snv();
-		// schrittweite mutieren
-		this.signum = this.signum * Math.exp(zz);
-
-		for (int i = 0; i < this.x.length; i++) {
-			zz = this.signum * snv();
-			this.x[i] = this.x[i] + zz;
-		}
-	}
-
-	public void rekombinieren(Hauptprogramm e1, Hauptprogramm e2) {
-		this.signum = (e1.signum + e2.signum) / 2.;
-		for (int i = 0; i < this.x.length; i++) {
-			double zz = Math.random();
-			if (zz < 0.5)
-				this.x[i] = e1.x[i];
-			else
-				this.x[i] = e2.x[i];
-		}
-	}
-
-	public static double snv() {
-		// Methode von BoxMuller
-		double z1 = Math.random();
-		double z2 = Math.random();
-		double x1 = Math.cos(z1 * 2 * Math.PI) * Math.sqrt(-2 * Math.log(z2));
-		double x2 = Math.sin(z1 * 2 * Math.PI) * Math.sqrt(-2 * Math.log(z2));
-		if (Math.random() < 0.5)
-			return x1;
-		else
-			return x2;
-	}
-
-	public static void main(String[] args) {
-
-		int s1 = r.nextInt(10);
-		int s2 = r.nextInt(10);
-		int s3 = r.nextInt(10);
-		double alpha = r.nextDouble() + 2.00;
-		fitness(s1, s2, alpha);
-	 
 	}
 
 }
